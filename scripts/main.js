@@ -19,7 +19,7 @@ window.RunGame = function () {
     document.body.appendChild(game.canvas);
     game.ctx = game.canvas.getContext('2d');
 
-    game.ground = new Ground(128);
+    game.ground = new Ground(256);
     game.ground.updateRender(game.ctx);
 
     game.testTree = new Tree(game.ground.toScreenX(64), game.ground.toScreenY(64), 1234567, 20.);
