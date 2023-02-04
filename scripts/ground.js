@@ -14,7 +14,7 @@ Ground.prototype.randomize = function() {
         this.heights.push(Math.random());
     }
 
-    for (let k=0; k<10; k++) {
+    for (let k=0; k<30; k++) {
         let oh = this.heights;
         this.heights = [];
         for (let i=0; i<oh.length; i++) {
