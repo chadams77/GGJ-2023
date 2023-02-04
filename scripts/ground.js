@@ -8,7 +8,7 @@ window.Ground = function(width, height) {
     this.ctx.clearRect(0, 0, width, height);
     this.img = this.ctx.getImageData(0, 0, width, height);
 
-    this.pal = [ /*[234,208,168], */[182,159,102], [107,84,40], [118,85,43], [64,41,5] ];
+    this.pal = [ /*[234,208,168], */[182,159,102], [107,84,40], [107,84,40], [118,85,43], [64,41,5], [118,85,43], [64,41,5]  ];
 
     this.rseq = new Float32Array(256*256);
     for (let i=0; i<this.rseq.length; i++) {
@@ -31,7 +31,7 @@ Ground.prototype.set = function(x, y) {
 
     const off = (x + y * this.width) * 4;
 
-    const hash = this.rseq[(Math.floor(x/6)*512+Math.floor(y/6+x/2)) % this.rseq.length];
+    const hash = this.rseq[(Math.floor(x/6)*512+Math.floor(y/6+x/2.5)) % this.rseq.length];
 
     const clr = this.pal[Math.floor(hash*1000000) % this.pal.length];
 
@@ -82,7 +82,7 @@ Ground.prototype.clear = function(x, y) {
 Ground.prototype.randomize = function() {
 
     for (let x=0; x<this.width; x++) {
-        const h = this.height * 0.8 + (Math.random() * 0.6 - 0.3) * this.height;
+        const h = this.height * 0.6 + (Math.random() * 0.6 - 0.3) * this.height;
         for (let y=0; y<this.height; y++) {
             if (y > h && Math.random() > 0.5) {
                 this.set(x, y);
@@ -90,12 +90,12 @@ Ground.prototype.randomize = function() {
         }
     }
 
-    for (let k=0; k<10; k++) {
+    for (let k=0; k<4; k++) {
         for (let x=0; x<this.width; x++) {
             for (let y=0; y<this.height; y++) {
                 let countEq = 0, countNeq = 0;
                 let bool = this.get(x, y);
-                for (let ox=-1; ox<=1; ox++) {
+                for (let ox=-6; ox<=6; ox++) {
                     for (let oy=-1; oy<=1; oy++) {
                         const eq = this.get(x+ox, y+oy) == bool;
                         countEq += eq ? 1 : 0;
@@ -136,6 +136,6 @@ Ground.prototype.updateRender = function(ctx, dt) {
         this.imgUpdated = false;
     }
 
-    ctx.drawImage(this.canvas, 0, 0);
+    ctx.drawImage(this.canvas, 0, -100, 2048, 1024);
 
 };
