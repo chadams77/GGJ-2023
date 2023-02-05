@@ -44,6 +44,17 @@ Ground.prototype.toScreenY = function(i) {
     return (this.heights[i] - 0.5) * 512 + 768;
 };
 
+Ground.prototype.isUnderground = function(sx, sy) {
+    let i = Math.floor(sx / 16);
+    let height = (sy - 768) / 512 + 0.5;
+    if (i < 0 || i >= this.heights.length) {
+        return true;
+    }
+    else {
+        return height > this.heights[i];
+    }
+};
+
 Ground.prototype.updateRender = function(ctx, dt) {
 
     ctx.lineWidth = 8;

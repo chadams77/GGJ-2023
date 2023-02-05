@@ -52,7 +52,9 @@ Branch.prototype.updateRender = function(
     // forces
     if (!this.isRoot) {
         this.forceY += 2.5 * this.weight;
-        this.forceX += (5 + 30 * Math.pow(Math.random(), 2)) * 500 * Math.sin(game.time / 3);
+        const F = game.windRain.getVelField(absX + Math.cos(absAngle) * this.length * 0.5, absY + Math.sin(absAngle) * this.length * 0.5);
+        this.forceX += F.vx * dt * 100.;
+        this.forceY += F.vy * dt * 100.;
     }
     // 
 
@@ -78,9 +80,9 @@ Branch.prototype.updateRender = function(
         absY = this.brokeY;
         absAngle = this.brokeAngle;
         this.brokeX += this.brokeVelX * dt;
-        this.brokeVelX -= this.brokeVelX * dt * 0.5;
+        this.brokeVelX -= this.brokeVelX * dt * 4.;
         this.brokeY += this.brokeVelY * dt;
-        this.brokeVelY -= this.brokeVelY * dt * 0.5;
+        this.brokeVelY -= this.brokeVelY * dt * 4.;
         this.brokeAngle += this.brokeAngVel * dt;
         this.brokeAngVel -= this.brokeAngVel * dt * 0.5;
         this.brokeVelX += this.forceX * dt / this.weight / 10;
