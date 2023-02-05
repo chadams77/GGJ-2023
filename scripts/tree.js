@@ -95,11 +95,11 @@ Branch.prototype.updateRender = function(
                 let idx = this.parent.sub.indexOf(this);
                 this.parent.sub.splice(idx, 1);
                 this.parent = null;
-                return;
+                return true;
             }
             this.brokenT = 0.;
         }
-        alpha *= this.brokenT / 1.5;
+        alpha *= Math.min(1, Math.max(0, this.brokenT / 1.5));
         absX = this.brokeX;
         absY = this.brokeY;
         absAngle = this.brokeAngle;
@@ -185,17 +185,21 @@ Branch.prototype.updateRender = function(
     if (this.isLeaf) {
         let x2 = absX, y2 = absY;
         let r = this.length * 0.5;
-        if (!this.leafAng) {
+        if (!this.leafAng && this.leafAng != 0.) {
             this.leafAng = (Math.PI/3 + Math.PI/2) - absRestAngle + (Math.random() * 0.1 - 0.05) * Math.PI;
         }
         leafs.push([this.clr, x2, y2, r, this.leafAng + absAngle, alpha, this.z, this.infClr, this.infection]);
     }
     // render leafs end
 
-    for (let sub of this.sub) {
+    for (let i=0; i<this.sub.length; i++) {
+        let sub = this.sub[i];
         let x2 = absX + Math.cos(absAngle) * sub.position,
             y2 = absY + Math.sin(absAngle) * sub.position;
-        sub.updateRender(ctx, dt, x2, y2, absAngle + sub.angle, leafs, absRestAngle + sub.restAngle, alpha);
+        if (sub.updateRender(ctx, dt, x2, y2, absAngle + sub.angle, leafs, absRestAngle + sub.restAngle, alpha) == true) {
+            i --;
+            continue;
+        }
     }
 
     // render branch
@@ -284,18 +288,9 @@ Tree.prototype.updateRender = function(ctx, dt) {
     leafs.sort((a, b) => a[6] - b[6]);
 
     for (let L of leafs) {
-        ctx.fillStyle = L[0];
-        ctx.globalAlpha = 0.9 * L[5];
-        ctx.beginPath();
-        ctx.moveTo(L[1] + Math.cos(L[4] + Math.PI/3) * L[3], L[2] + Math.sin(L[4] + Math.PI/3) * L[3]);
-        ctx.lineTo(L[1] + Math.cos(L[4] + 2*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 2*Math.PI/3) * L[3]);
-        ctx.lineTo(L[1] + Math.cos(L[4] + 3*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 3*Math.PI/3) * L[3]);
-        ctx.lineTo(L[1] + Math.cos(L[4] + 4*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 4*Math.PI/3) * L[3]);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-        if (L[8] > 0.) {
-            ctx.fillStyle = L[7];
-            ctx.globalAlpha = 0.9 * L[5] * L[8];
+        if (L[3] > 0.1) {
+            ctx.fillStyle = L[0];
+            ctx.globalAlpha = 0.9 * L[5];
             ctx.beginPath();
             ctx.moveTo(L[1] + Math.cos(L[4] + Math.PI/3) * L[3], L[2] + Math.sin(L[4] + Math.PI/3) * L[3]);
             ctx.lineTo(L[1] + Math.cos(L[4] + 2*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 2*Math.PI/3) * L[3]);
@@ -303,6 +298,17 @@ Tree.prototype.updateRender = function(ctx, dt) {
             ctx.lineTo(L[1] + Math.cos(L[4] + 4*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 4*Math.PI/3) * L[3]);
             ctx.fill();
             ctx.globalAlpha = 1.0;
+            if (L[8] > 0.) {
+                ctx.fillStyle = L[7];
+                ctx.globalAlpha = 0.9 * L[5] * L[8];
+                ctx.beginPath();
+                ctx.moveTo(L[1] + Math.cos(L[4] + Math.PI/3) * L[3], L[2] + Math.sin(L[4] + Math.PI/3) * L[3]);
+                ctx.lineTo(L[1] + Math.cos(L[4] + 2*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 2*Math.PI/3) * L[3]);
+                ctx.lineTo(L[1] + Math.cos(L[4] + 3*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 3*Math.PI/3) * L[3]);
+                ctx.lineTo(L[1] + Math.cos(L[4] + 4*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 4*Math.PI/3) * L[3]);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
         }
     }
 
