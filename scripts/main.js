@@ -4,7 +4,7 @@ window.InitSound = function () {
     sounds.whenLoaded = function () {
         if (!window.soundInitialized) {
             window.soundInitialized = true;
-            game.music = sounds["sfx/music.wav"];
+            game.music = sounds["sfx/music.mp3"];
             game.music.loop = true;
             game.music.volume = 0.3;
             game.music.play();   
@@ -12,7 +12,7 @@ window.InitSound = function () {
     };
     if (!window.soundInitialized) {
         sounds.load([
-            "sfx/music.wav",
+            "sfx/music.mp3",
             "sfx/break.wav",
             "sfx/die.wav",
             "sfx/spawn.wav",
