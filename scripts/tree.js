@@ -50,12 +50,16 @@ Branch.prototype.updateRender = function(
         absX, absY, absAngle,
         leafs,
         absRestAngle,
-        parentAlpha
+        parentAlpha,
+        parentDead
     ) { 
 
     // bugs/infection
     game.bugs.handleBranch(this, absX, absY, absAngle);
     game.totalB += 1.;
+    if (parentDead) {
+        this.infection = Math.max(this.infection, 0.1);
+    }
     if (this.infection > 0.) {
         this.infection += dt * 0.25;
         if (this.isLeaf) {
@@ -68,6 +72,9 @@ Branch.prototype.updateRender = function(
             }
             for (let S of this.sub) {
                 S.infection = Math.max(S.infection, 0.1);
+            }
+            if (parentDead && this.isLeaf) {
+                this.hp -= dt;
             }
         }
         game.infectedB += Math.min(1, this.infection || 0.);
@@ -142,7 +149,7 @@ Branch.prototype.updateRender = function(
         dist = 80;
     }
 
-    if (!this.broken && !this.isLeaf && this.level < MAX_LEV && this.sub.length < 5 && (this.length / (this.sub.length+1)) > dist && Math.random() < (0.01 * TREE_GROWTH_RATE) && (this.growthSpeed > 2 || this.hadBroken)) {
+    if (!this.broken && !this.isLeaf && this.level < MAX_LEV && this.sub.length < 5 && (this.length / (this.sub.length+1)) > dist && Math.random() < (0.01 * TREE_GROWTH_RATE) && (this.growthSpeed > 2 || this.hadBroken) && !parentDead) {
         
         let angle = 0;
         let k = 0;
@@ -196,7 +203,7 @@ Branch.prototype.updateRender = function(
         let sub = this.sub[i];
         let x2 = absX + Math.cos(absAngle) * sub.position,
             y2 = absY + Math.sin(absAngle) * sub.position;
-        if (sub.updateRender(ctx, dt, x2, y2, absAngle + sub.angle, leafs, absRestAngle + sub.restAngle, alpha) == true) {
+        if (sub.updateRender(ctx, dt, x2, y2, absAngle + sub.angle, leafs, absRestAngle + sub.restAngle, alpha, parentDead) == true) {
             i --;
             continue;
         }
@@ -276,14 +283,14 @@ Tree.prototype.updateRender = function(ctx, dt) {
 
     let leafs = [];
 
-    this.trunk.updateRender(ctx, dt, this.startX, this.startY, this.trunk.angle, leafs, this.trunk.restAngle, 1);
+    this.trunk.updateRender(ctx, dt, this.startX, this.startY, this.trunk.angle, leafs, this.trunk.restAngle, 1, this.dead);
 
-    if (this.trunk.infection >= 1) {
+    if (this.trunk.infection >= 1.) {
         this.root.infection = Math.max(this.root.infection, 0.1);
-        this.trunk.hp -= dt * 0.75;
+        this.dead = true;
     }
 
-    this.root.updateRender(ctx, dt, this.startX, this.startY, this.root.angle, null, this.root.restAngle, 1);
+    this.root.updateRender(ctx, dt, this.startX, this.startY, this.root.angle, null, this.root.restAngle, 1, this.dead);
 
     leafs.sort((a, b) => a[6] - b[6]);
 
