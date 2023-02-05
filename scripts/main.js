@@ -159,7 +159,7 @@ window.Tick = function() {
         game.ctx.textAlign = 'left';
     }
 
-    if (game.infectedB >= game.totalB && !game.lost) {
+    if (game.infectedB >= game.totalB && !game.lost && game.totalB > 10) {
         game.lost = true;
         game.lostT = 0;
     }

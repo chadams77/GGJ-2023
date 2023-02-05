@@ -144,7 +144,7 @@ WindRain.prototype.updateRender = function(ctx, dt) {
     for (let i=0; i<this.rain.length; i++) {
         const R = this.rain[i];
         let wf = this.getVelField(R.x, R.y);
-        let lx = R.x, ly = R.y;
+        let lx = R.x - R.vx * dt, ly = R.y - R.vy * dt;
         R.x += R.vx * dt;
         R.y += R.vy * dt;
         R.vx += wf.vx * dt * 0.05;
@@ -154,7 +154,7 @@ WindRain.prototype.updateRender = function(ctx, dt) {
         R.vy += 100 * dt;
         ctx.beginPath();
         ctx.moveTo(lx, ly);
-        ctx.lineTo(R.x, R.y);
+        ctx.lineTo(R.x + R.vx * dt, R.y + R.vy * dt);
         ctx.stroke();
         if (game.ground.isUnderground(R.x, R.y) || R.y > 4000) {
             this.rain[i] = {

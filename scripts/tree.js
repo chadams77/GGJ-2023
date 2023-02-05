@@ -55,7 +55,7 @@ Branch.prototype.updateRender = function(
 
     // bugs/infection
     game.bugs.handleBranch(this, absX, absY, absAngle);
-    game.totalB += this.hp;
+    game.totalB += 1.;
     if (this.infection > 0.) {
         this.infection += dt * 0.25;
         if (this.isLeaf) {
@@ -70,7 +70,7 @@ Branch.prototype.updateRender = function(
                 S.infection = Math.max(S.infection, 0.1);
             }
         }
-        game.infectedB += this.infection;
+        game.infectedB += Math.min(1, this.infection || 0.);
     }
 
     // forces
