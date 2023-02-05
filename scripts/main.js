@@ -91,17 +91,27 @@ window.RunGame = function () {
     document.addEventListener('mouseup', MouseEnd, false);
     document.addEventListener('mousemove', MouseMove, false);
 
+    game.startT = 0;
+    game.lost = false;
+
     Tick();
 
 };
 
 window.Tick = function() {
 
-    if (game.touchDown && (game.time - game.touchStartT) > 0.5) {
+    if (game.width != window.innerWidth || game.height != window.innerHeight) {
+        game.width = window.innerWidth;
+        game.height = window.innerHeight;
+        game.canvas.width = game.width;
+        game.canvas.height = game.height;
+    }
+
+    if (game.touchDown && (game.time - game.touchStartT) > 1.0) {
         game.touchDown = false;
     }
 
-    if (game.touchDown) {
+    if (game.touchDown && !game.lost) {
         let dx = game.touchNewX - game.touchStartX,
             dy = game.touchNewY - game.touchStartY;
         for (let k=0; k<5; k++) {
@@ -129,5 +139,39 @@ window.Tick = function() {
     game.ctx.fillText(`Infection: ${Math.floor(100*game.infectedB/Math.max(game.totalB, 1))}%`, 24, 24 + 28);
     game.ctx.fillStyle = '#FF8';
     game.ctx.fillText(`Score: ${game.totalBugs * 1000}`, 24, 32 + 24 + 28);
+    game.ctx.fillStyle = '#FF8';
+    game.ctx.fillText(`Stage: ${game.bugs.stage}`, 24, 32 + 24 + 28 + 30);
+
+    game.startT += game.dt;
+    if (game.startT < 5) {
+        game.ctx.globalAlpha = Math.pow((5 - game.startT) / 5, 0.35);
+        game.ctx.font = '64px Trebuchet MS';
+        game.ctx.fillStyle = '#8F8';
+        game.ctx.textAlign = 'center';
+        game.ctx.fillText(`Protect the Trees. Swipe for wind.`, game.width * 0.5, game.height * 0.35 + 28);
+        game.ctx.globalAlpha = 1;
+        game.ctx.textAlign = 'left';
+    }
+
+    if (game.infectedB >= game.totalB && !game.lost) {
+        game.lost = true;
+        game.lostT = 0;
+    }
+
+    if (game.lost) {
+        game.lostT += game.dt;
+        if (game.lostT < 5) {
+            game.ctx.globalAlpha = Math.pow((5 - game.lostT)/5, 0.35) * Math.pow(game.lostT / 5, 0.35);
+            game.ctx.font = '64px Trebuchet MS';
+            game.ctx.fillStyle = '#F44';
+            game.ctx.textAlign = 'center';
+            game.ctx.fillText(`Failure... Final Score: ${game.totalBugs * 1000}`, game.width * 0.5, game.height * 0.35 + 28);
+            game.ctx.globalAlpha = 1;
+            game.ctx.textAlign = 'left';
+        }
+        else {
+            window.location.reload();
+        }
+    }
 
 };
