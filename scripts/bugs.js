@@ -15,6 +15,10 @@ window.Bug = function(x, y) {
 
     this.moveTo = null;//{ x: Math.random() * 2000, y: 500 + Math.random() * 500 };
 
+    if (!game.lost) {
+        PlaySound('spawn', this.x, 0.75);
+    }
+
 };
 
 Bug.prototype.updateRender = function(ctx, dt) {
@@ -24,6 +28,10 @@ Bug.prototype.updateRender = function(ctx, dt) {
 
     if (game.ground.isUnderground(this.x, this.y+this.radius)) {
         this.life = Math.min(this.life, 1.)
+        if (!this.ug1) {
+            PlaySound('break', this.x, 1.);
+            this.ug1 = true;
+        }
     }
 
     if (this.life < 1.) {
@@ -34,7 +42,9 @@ Bug.prototype.updateRender = function(ctx, dt) {
     }
 
     if (this.life < 0.) {
-        game.totalBugs += 1;
+        if (!game.lost) {
+            game.totalBugs += 1;
+        }
         return false;
     }
 
@@ -158,6 +168,7 @@ Bugs.prototype.handleBranch = function(B, absX, absY, absAngle) {
         if (dist < I.radius) {
             if (B.isLeaf) {
                 B.infection = Math.max(B.infection, 0.1);
+                PlaySound('break', B.x, 1.);
             }
             I.life = Math.min(I.life, 0.9999);
         }

@@ -251,7 +251,10 @@ Branch.prototype.updateRender = function(
         if (this.hp > 1.) {
             this.hp = 1.;
         }
-        if ((FL1/this.weight > (1 + Math.pow(Math.random(), 0.5) * 6) || this.hp <= 0.) && this.growT < 0) {
+        if ((FL1/this.weight > (1 + Math.pow(Math.random(), 0.5) * 6) || this.hp <= 0.) && this.growT < 0 && !this.trunk) {
+            if (Math.random() < (1/8)) {
+                PlaySound('break', absX, Math.pow(this.weight, 0.1)*0.05 * 2.);
+            }
             this.broken = true;
             this.brokeX = absX;
             this.brokeY = absY;
@@ -283,6 +286,7 @@ Tree.prototype.updateRender = function(ctx, dt) {
 
     let leafs = [];
 
+    this.trunk.isTrunk = true;
     this.trunk.updateRender(ctx, dt, this.startX, this.startY, this.trunk.angle, leafs, this.trunk.restAngle, 1, this.dead);
 
     if (this.trunk.infection >= 1.) {

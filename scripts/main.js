@@ -1,5 +1,39 @@
 window.game = {};
 
+window.InitSound = function () {
+    sounds.whenLoaded = function () {
+        if (!window.soundInitialized) {
+            window.soundInitialized = true;
+            game.music = sounds["sfx/music.wav"];
+            game.music.loop = true;
+            game.music.volume = 0.3;
+            game.music.play();   
+        }
+    };
+    if (!window.soundInitialized) {
+        sounds.load([
+            "sfx/music.wav",
+            "sfx/break.wav",
+            "sfx/die.wav",
+            "sfx/spawn.wav",
+            "sfx/wind.wav"
+        ])
+    }
+};
+
+window.PlaySound = function(sfx, x, vol, fadeIn) {
+    if (window.soundInitialized) {
+        let sound = sounds['sfx/' + sfx + '.wav'];
+        sound.volume = vol || 0.85;
+        sound.pan = Math.max(-1, Math.min(1, (x - 1250) / 1250)) || 0.;
+        sound.playbackRate = Math.random() * 0.2 + 0.9;
+        sound.play();
+        if (fadeIn) {
+            sound.fadeIn(fadeIn);
+        }
+    }
+}
+
 window.TouchStart = function(e) {
     e = e || window.event;
     let touches = e.touches;
@@ -19,6 +53,7 @@ window.TouchEnd = function(e) {
         return;
     }
     game.touchDown = false;
+    InitSound();
 };
 
 window.TouchMove = function(e) {
@@ -39,6 +74,7 @@ window.MouseStart = function(e) {
 window.MouseEnd = function(e) {
     e = e || window.event;
     game.touchDown = false;
+    InitSound();
 };
 
 window.MouseMove = function(e) {
@@ -123,6 +159,8 @@ window.Tick = function() {
         for (let k=0; k<5; k++) {
             game.windRain.applyForce((game.touchStartX + game.touchNewX) * 0.5 / document.body.style.zoom, (game.touchStartY + game.touchNewY) * 0.5 / document.body.style.zoom, dx, dy);
         }
+        if (Math.random() < (1/4))
+        PlaySound("wind", game.touchNewX, 2 * Math.sqrt(dx*dx+dy*dy) / 10000);
     }
 
     window.setTimeout(Tick, 1000 * game.dt);
@@ -151,6 +189,14 @@ window.Tick = function() {
     game.startT += game.dt;
     if (game.startT < 5) {
         game.ctx.globalAlpha = Math.pow((5 - game.startT) / 5, 0.35);
+        game.ctx.font = '72px Trebuchet MS';
+        game.ctx.fillStyle = '#2F2';
+        game.ctx.textAlign = 'center';
+        game.ctx.fillText(`GAWN WIT TEH WYND`, game.canvas.width * 0.5, game.canvas.height * 0.35 - 48);
+        game.ctx.font = '12px Trebuchet MS';
+        game.ctx.fillStyle = '#2F2';
+        game.ctx.textAlign = 'center';
+        game.ctx.fillText(`by Chris Adams`, game.canvas.width * 0.5, game.canvas.height * 0.35 - 32);
         game.ctx.font = '64px Trebuchet MS';
         game.ctx.fillStyle = '#8F8';
         game.ctx.textAlign = 'center';
@@ -162,12 +208,16 @@ window.Tick = function() {
     if (game.infectedB >= game.totalB && !game.lost && game.totalB > 10) {
         game.lost = true;
         game.lostT = 0;
+        if (game.music) {
+            game.music.fadeOut(0.5);
+            PlaySound('die', null, 0.25, 0.2);
+        }
     }
 
     if (game.lost) {
         game.lostT += game.dt;
-        if (game.lostT < 5) {
-            game.ctx.globalAlpha = Math.pow((5 - game.lostT)/5, 0.35) * Math.pow(game.lostT / 5, 0.35);
+        if (game.lostT < 15) {
+            game.ctx.globalAlpha = Math.pow((15 - game.lostT)/15, 0.35) * Math.pow(game.lostT / 15, 0.2);
             game.ctx.font = '64px Trebuchet MS';
             game.ctx.fillStyle = '#F44';
             game.ctx.textAlign = 'center';
