@@ -59,7 +59,7 @@ window.RunGame = function () {
     game.height = window.innerHeight;
     game.canvas.width = game.width;
     game.canvas.height = game.height;
-    game.canvas.style.position = "fixed";
+    game.canvas.style.position = 'absolute';
     game.canvas.style.left = "0px";
     game.canvas.style.top = "0px";
     game.canvas.style.width = "100%";
@@ -94,17 +94,23 @@ window.RunGame = function () {
     game.startT = 0;
     game.lost = false;
 
+    game.izoomed = false;
+
     Tick();
 
 };
 
 window.Tick = function() {
 
-    if (game.width != window.innerWidth || game.height != window.innerHeight) {
+    if (game.width != window.innerWidth || game.height != window.innerHeight || !game.izoomed) {
+
+        game.izoomed = true;
         game.width = window.innerWidth;
         game.height = window.innerHeight;
-        game.canvas.width = game.width;
-        game.canvas.height = game.height;
+        game.canvas.width = 2500;
+        game.canvas.height = 2500 * (window.innerHeight / window.innerWidth);
+
+        document.body.style.zoom = game.width / 2500;
     }
 
     if (game.touchDown && (game.time - game.touchStartT) > 1.0) {
@@ -115,12 +121,12 @@ window.Tick = function() {
         let dx = game.touchNewX - game.touchStartX,
             dy = game.touchNewY - game.touchStartY;
         for (let k=0; k<5; k++) {
-            game.windRain.applyForce((game.touchStartX + game.touchNewX) * 0.5, (game.touchStartY + game.touchNewY) * 0.5, dx, dy);
+            game.windRain.applyForce((game.touchStartX + game.touchNewX) * 0.5 / document.body.style.zoom, (game.touchStartY + game.touchNewY) * 0.5 / document.body.style.zoom, dx, dy);
         }
     }
 
     window.setTimeout(Tick, 1000 * game.dt);
-    game.ctx.clearRect(0, 0, game.width, game.height);
+    game.ctx.clearRect(0, 0, game.canvas.width, game.canvas.height);
     game.time += game.dt;
    
     game.windRain.updateRender(game.ctx, game.dt);
@@ -148,7 +154,7 @@ window.Tick = function() {
         game.ctx.font = '64px Trebuchet MS';
         game.ctx.fillStyle = '#8F8';
         game.ctx.textAlign = 'center';
-        game.ctx.fillText(`Protect the Trees. Swipe for wind.`, game.width * 0.5, game.height * 0.35 + 28);
+        game.ctx.fillText(`Protect the Trees. Swipe for wind.`, game.canvas.width * 0.5, game.canvas.height * 0.35 + 28);
         game.ctx.globalAlpha = 1;
         game.ctx.textAlign = 'left';
     }
@@ -165,7 +171,7 @@ window.Tick = function() {
             game.ctx.font = '64px Trebuchet MS';
             game.ctx.fillStyle = '#F44';
             game.ctx.textAlign = 'center';
-            game.ctx.fillText(`Failure... Final Score: ${game.totalBugs * 1000}`, game.width * 0.5, game.height * 0.35 + 28);
+            game.ctx.fillText(`Failure... Final Score: ${game.totalBugs * 1000}`, game.canvas.width * 0.5, game.canvas.height * 0.35 + 28);
             game.ctx.globalAlpha = 1;
             game.ctx.textAlign = 'left';
         }

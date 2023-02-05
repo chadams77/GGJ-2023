@@ -64,7 +64,6 @@ Bug.prototype.updateRender = function(ctx, dt) {
             if (lst.length) {
                 let tree = lst[Math.floor(Math.random()*24525)%lst.length];
                 this.moveTo = { x: tree.startX, y: tree.startY-200 };
-                console.log(this.moveTo);
             }
         }
     }
