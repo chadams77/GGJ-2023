@@ -13,7 +13,7 @@ window.Bug = function(x, y) {
 
     this.clr = [ '#da11d7', '#f04dee', '#870b85', '#f699f5' ][Math.floor(Math.random()*1e9)%4];
 
-    this.moveTo = { x: Math.random() * 2000, y: 500 + Math.random() * 500 };
+    this.moveTo = null;//{ x: Math.random() * 2000, y: 500 + Math.random() * 500 };
 
 };
 
@@ -34,6 +34,7 @@ Bug.prototype.updateRender = function(ctx, dt) {
     }
 
     if (this.life < 0.) {
+        game.totalBugs += 1;
         return false;
     }
 
@@ -49,12 +50,22 @@ Bug.prototype.updateRender = function(ctx, dt) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
-    if (Math.random() < 0.001) {
-        if (this.moveTo && Math.random() < 0.1) {
-            this.moveTo = null;
+    if (Math.random() < 0.001 || !this.moveTo) {
+        if (this.moveTo && Math.random() < 0.25) {
+            this.moveTo = { x: Math.random() * 2000, y: 500 + Math.random() * 500 };
         }
         else {
-            this.moveTo = { x: Math.random() * 2000, y: 500 + Math.random() * 500 };
+            let lst = [];
+            for (let i=0; i<game.trees.length; i++) {
+                if (!game.trees[i].root.infection) {
+                    lst.push(game.trees[i]);
+                }
+            }
+            if (lst.length) {
+                let tree = lst[Math.floor(Math.random()*24525)%lst.length];
+                this.moveTo = { x: tree.startX, y: tree.startY };
+                console.log(this.moveTo);
+            }
         }
     }
 

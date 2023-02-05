@@ -28,7 +28,7 @@ window.Branch = function(position, angle, isRoot, growthSpeed, parent) {
     this.brokeX = this.brokeY = this.brokeAngle = 0.;
     this.brokeVelX = this.brokeVelY = this.brokeAngVel = 0.;
     this.growT = 1.5;
-    this.infection = 0.;
+    this.infection = Math.max(0., this.parent ? this.parent.infection||0 : 0.);
     this.z = Math.random() * 1000;
     this.infClr = ['#da11d7', '#f04dee', '#870b85', '#f699f5'][Math.floor(Math.random()*1e9)%4];
     if (this.isRoot) {

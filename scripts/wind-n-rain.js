@@ -17,7 +17,7 @@ window.WindRain = function(gWidth, gHeight, gSize) {
             vx: 0,
             vy: RAIN_V0,
             x: Math.random() * gWidth * gSize,
-            y: RAIN_START - Math.random() * gHeight * gSize
+            y: Math.random() * (gHeight * gSize - RAIN_START)
         });
     }
 

@@ -81,6 +81,8 @@ window.RunGame = function () {
         new Tree(game.ground.toScreenX(128), game.ground.toScreenY(128), 1234562, 20.)
     ];
 
+    game.totalBugs = 0;
+
     document.addEventListener('touchstart', TouchStart, false);
     document.addEventListener('touchend', TouchEnd, false);
     document.addEventListener('touchmove', TouchMove, false);
@@ -120,10 +122,12 @@ window.Tick = function() {
         tree.updateRender(game.ctx, game.dt);
     }
 
+    game.bugs.updateRender(game.ctx, game.dt);
+
     game.ctx.font = '32px Trebuchet MS';
     game.ctx.fillStyle = '#F88';
     game.ctx.fillText(`Infection: ${Math.floor(100*game.infectedB/Math.max(game.totalB, 1))}%`, 24, 24 + 28);
-
-    game.bugs.updateRender(game.ctx, game.dt);
+    game.ctx.fillStyle = '#FF8';
+    game.ctx.fillText(`Score: ${game.totalBugs * 1000}`, 24, 32 + 24 + 28);
 
 };
