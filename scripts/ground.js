@@ -11,7 +11,7 @@ Ground.prototype.randomize = function() {
 
     this.heights = [];
     for (let i=0; i<this.res; i++) {
-        this.heights.push(Math.random());
+        this.heights.push(Math.random() * 0.25 + 0.75);
     }
 
     for (let k=0; k<30; k++) {
@@ -22,8 +22,14 @@ Ground.prototype.randomize = function() {
             if (i>1) {
                 h += oh[i-1];
             }
+            else {
+                h += oh[i];
+            }
             if (i < (oh.length-1)) {
                 h += oh[i+1];
+            }
+            else {
+                h += oh[i];
             }
             this.heights.push(h / 3.);
         }

@@ -71,11 +71,15 @@ window.RunGame = function () {
     game.ground = new Ground(256);
     game.ground.updateRender(game.ctx);
 
-    game.windRain = new WindRain(256, 128, 32);
+    game.windRain = new WindRain(200, 100, 48);
+    game.bugs = new Bugs();
 
-    game.testTree = new Tree(game.ground.toScreenX(64), game.ground.toScreenY(64), 1234567, 20.);
-    game.testTree2 = new Tree(game.ground.toScreenX(32), game.ground.toScreenY(32), 1234561, 10.);
-    game.testTree3 = new Tree(game.ground.toScreenX(96), game.ground.toScreenY(96), 1234562, 10.);
+    game.trees = [
+        new Tree(game.ground.toScreenX(64), game.ground.toScreenY(64), 1234567, 20.),
+        new Tree(game.ground.toScreenX(32), game.ground.toScreenY(32), 1234561, 15.),
+        new Tree(game.ground.toScreenX(96), game.ground.toScreenY(96), 1234562, 15.),
+        new Tree(game.ground.toScreenX(128), game.ground.toScreenY(128), 1234562, 20.)
+    ];
 
     document.addEventListener('touchstart', TouchStart, false);
     document.addEventListener('touchend', TouchEnd, false);
@@ -109,8 +113,17 @@ window.Tick = function() {
    
     game.windRain.updateRender(game.ctx, game.dt);
     game.ground.updateRender(game.ctx, game.dt);
-    game.testTree.updateRender(game.ctx, game.dt);
-    game.testTree2.updateRender(game.ctx, game.dt);
-    game.testTree3.updateRender(game.ctx, game.dt);
+
+    game.infectedB = 0;
+    game.totalB = 0;
+    for (let tree of game.trees) {
+        tree.updateRender(game.ctx, game.dt);
+    }
+
+    game.ctx.font = '32px Trebuchet MS';
+    game.ctx.fillStyle = '#F88';
+    game.ctx.fillText(`Infection: ${Math.floor(100*game.infectedB/Math.max(game.totalB, 1))}%`, 24, 24 + 28);
+
+    game.bugs.updateRender(game.ctx, game.dt);
 
 };

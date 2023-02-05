@@ -24,9 +24,13 @@ window.Branch = function(position, angle, isRoot, growthSpeed, parent) {
     this.isLeaf = !this.isRoot && (this.level == MAX_LEV || growthSpeed < 5);
     this.broken = false;
     this.brokenT = 1.5;
+    this.hp = 1.;
     this.brokeX = this.brokeY = this.brokeAngle = 0.;
     this.brokeVelX = this.brokeVelY = this.brokeAngVel = 0.;
     this.growT = 1.5;
+    this.infection = 0.;
+    this.z = Math.random() * 1000;
+    this.infClr = ['#da11d7', '#f04dee', '#870b85', '#f699f5'][Math.floor(Math.random()*1e9)%4];
     if (this.isRoot) {
         this.clr = ['#65331c', '#2f3324', '#392b17', '#3a3915'][Math.floor(Math.random()*1e6)%4];
     }
@@ -48,6 +52,26 @@ Branch.prototype.updateRender = function(
         absRestAngle,
         parentAlpha
     ) { 
+
+    // bugs/infection
+    game.bugs.handleBranch(this, absX, absY, absAngle);
+    game.totalB += this.hp;
+    if (this.infection > 0.) {
+        this.infection += dt * 0.25;
+        if (this.isLeaf) {
+            this.infection += dt * 0.75;
+        }
+        if (this.infection > 1.) {
+            this.infection = 1.;
+            if (this.parent) {
+                this.parent.infection = Math.max(0.1, this.parent.infection);
+            }
+            for (let S of this.sub) {
+                S.infection = Math.max(S.infection, 0.1);
+            }
+        }
+        game.infectedB += this.infection;
+    }
 
     // forces
     if (!this.isRoot) {
@@ -164,7 +188,7 @@ Branch.prototype.updateRender = function(
         if (!this.leafAng) {
             this.leafAng = (Math.PI/3 + Math.PI/2) - absRestAngle + (Math.random() * 0.1 - 0.05) * Math.PI;
         }
-        leafs.push([this.clr, x2, y2, r, this.leafAng + absAngle, alpha]);
+        leafs.push([this.clr, x2, y2, r, this.leafAng + absAngle, alpha, this.z, this.infClr, this.infection]);
     }
     // render leafs end
 
@@ -184,6 +208,16 @@ Branch.prototype.updateRender = function(
         ctx.lineTo(absX + Math.cos(absAngle + Math.PI * 0.5) * this.length * THICK_R, absY + Math.sin(absAngle + Math.PI * 0.5) * this.length * THICK_R);
         ctx.fill();
         ctx.globalAlpha = 1.;
+        if (this.infection > 0.) {
+            ctx.globalAlpha = alpha * this.infection;
+            ctx.fillStyle = this.infClr;
+            ctx.beginPath();
+            ctx.moveTo(absX + Math.cos(absAngle - Math.PI * 0.5) * this.length * THICK_R, absY + Math.sin(absAngle - Math.PI * 0.5) * this.length * THICK_R);
+            ctx.lineTo(absX + Math.cos(absAngle) * this.length, absY + Math.sin(absAngle) * this.length);
+            ctx.lineTo(absX + Math.cos(absAngle + Math.PI * 0.5) * this.length * THICK_R, absY + Math.sin(absAngle + Math.PI * 0.5) * this.length * THICK_R);
+            ctx.fill();
+            ctx.globalAlpha = 1.;    
+        }
     }
     // render branch end
 
@@ -199,7 +233,14 @@ Branch.prototype.updateRender = function(
         let angDiff = -Math.atan2(Math.sin(absAngle - forceAngle), Math.cos(absAngle - forceAngle));
         //let angDiff = Math.atan2(fdy - Math.sin(absAngle), fdx - Math.cos(absAngle));
         let FL1 = forceLen / this.weight;
-        if (FL1/this.weight > (1 + Math.pow(Math.random(), 0.5) * 6) && this.growT < 0) {
+        this.hp -= Math.max(FL1*0.025-1., -0.5) * dt;
+        if (this.hp < 0.) {
+            this.hp = 0;
+        }
+        if (this.hp > 1.) {
+            this.hp = 1.;
+        }
+        if ((FL1/this.weight > (1 + Math.pow(Math.random(), 0.5) * 6) || this.hp <= 0.) && this.growT < 0) {
             this.broken = true;
             this.brokeX = absX;
             this.brokeY = absY;
@@ -232,7 +273,15 @@ Tree.prototype.updateRender = function(ctx, dt) {
     let leafs = [];
 
     this.trunk.updateRender(ctx, dt, this.startX, this.startY, this.trunk.angle, leafs, this.trunk.restAngle, 1);
+
+    if (this.trunk.infection >= 1) {
+        this.root.infection = Math.max(this.root.infection, 0.1);
+        this.trunk.hp -= dt * 0.75;
+    }
+
     this.root.updateRender(ctx, dt, this.startX, this.startY, this.root.angle, null, this.root.restAngle, 1);
+
+    leafs.sort((a, b) => a[6] - b[6]);
 
     for (let L of leafs) {
         ctx.fillStyle = L[0];
@@ -244,6 +293,17 @@ Tree.prototype.updateRender = function(ctx, dt) {
         ctx.lineTo(L[1] + Math.cos(L[4] + 4*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 4*Math.PI/3) * L[3]);
         ctx.fill();
         ctx.globalAlpha = 1.0;
+        if (L[8] > 0.) {
+            ctx.fillStyle = L[7];
+            ctx.globalAlpha = 0.9 * L[5] * L[8];
+            ctx.beginPath();
+            ctx.moveTo(L[1] + Math.cos(L[4] + Math.PI/3) * L[3], L[2] + Math.sin(L[4] + Math.PI/3) * L[3]);
+            ctx.lineTo(L[1] + Math.cos(L[4] + 2*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 2*Math.PI/3) * L[3]);
+            ctx.lineTo(L[1] + Math.cos(L[4] + 3*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 3*Math.PI/3) * L[3]);
+            ctx.lineTo(L[1] + Math.cos(L[4] + 4*Math.PI/3) * L[3], L[2] + Math.sin(L[4] + 4*Math.PI/3) * L[3]);
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+        }
     }
 
 };
